@@ -1,4 +1,13 @@
+/**
+ * Title: Uptime Monitoring Api
+ * Description:
+ * Author: Marzuk Zarir
+ * Date: 3-7-21
+ *
+ */
+
 const http = require('http')
+const { handleReqRes } = require('./helper/handleReqRes')
 
 // Main object
 const app = {}
@@ -10,15 +19,10 @@ app.config = {
 
 // Create a server
 app.createServer = () => {
-    const server = http.createServer(app.handleServer)
+    const server = http.createServer(handleReqRes)
     server.listen(app.config.port, () => {
         console.log(`Server is running on http://localhost:${app.config.port}`)
     })
-}
-
-// Handle server
-app.handleServer = (req, res) => {
-    res.end('Server is fine')
 }
 
 // Start Server
