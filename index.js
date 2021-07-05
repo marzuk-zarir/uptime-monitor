@@ -7,21 +7,18 @@
  */
 
 const http = require('http')
+const env = require('./environment/env')
 const { handleReqRes } = require('./helper/handleReqRes')
 
 // Main object
 const app = {}
 
-// Configuration
-app.config = {
-    port: 3000
-}
-
 // Create a server
 app.createServer = () => {
     const server = http.createServer(handleReqRes)
-    server.listen(app.config.port, () => {
-        console.log(`Server is running on http://localhost:${app.config.port}`)
+    server.listen(env.port, () => {
+        console.log(`Application is running on ${env.env} environment`)
+        console.log(`Server is running on http://localhost:${env.port}`)
     })
 }
 

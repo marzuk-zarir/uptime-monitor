@@ -30,19 +30,6 @@ handler.handleReqRes = (req, res) => {
     const selectHandler = routes[pathname] ? routes[pathname] : notFoundHandler
     const requestObject = { reqHeader, reqMethod, pathname, queryStrings }
 
-    // This callback call from routes
-    selectHandler(requestObject, (statusCode, reqBody) => {
-        statusCode = typeof statusCode === 'number' ? statusCode : 500
-        reqBody = typeof reqBody === 'object' ? reqBody : {}
-
-        // Convert object as a string
-        const body = JSON.stringify(reqBody)
-
-        // Send response to client
-        res.writeHead(statusCode)
-        res.end(body)
-    })
-
     // Request body as received as buffer
     req.on('data', (bufferChunk) => {
         fullData += decoder.write(bufferChunk)
@@ -51,6 +38,19 @@ handler.handleReqRes = (req, res) => {
     // When stream complete this event fire
     req.on('end', () => {
         fullData += decoder.end()
+
+        // This callback call from routes
+        selectHandler(requestObject, (statusCode, reqBody) => {
+            statusCode = typeof statusCode === 'number' ? statusCode : 500
+            reqBody = typeof reqBody === 'object' ? reqBody : {}
+
+            // Convert object as a string
+            const body = JSON.stringify(reqBody)
+
+            // Send response to client
+            res.writeHead(statusCode)
+            res.end(body)
+        })
     })
 }
 
