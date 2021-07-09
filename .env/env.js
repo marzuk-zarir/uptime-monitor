@@ -11,23 +11,21 @@ const env = {}
 // Development environment
 env.development = {
     port: 3000,
-    env: 'development'
+    env: 'development',
+    secretKey: 'fWwnQtE0wu'
 }
 
 // Production environment
 env.production = {
     port: 6000,
-    env: 'production'
+    env: 'production',
+    secretKey: "H/JvU@'5#}k}MBkbYqDXVLonY2O8]7"
 }
 
 // Grab which environment user pass to run this app (default: 'development')
-const givenEnv =
-    typeof process.env.NODE_ENV === 'string'
-        ? process.env.NODE_ENV
-        : 'development'
+const givenEnv = typeof process.env.NODE_ENV === 'string' ? process.env.NODE_ENV : 'development'
 
 // Select specific object for given environment
-const selectedEnvObj =
-    typeof env[givenEnv] === 'object' ? env[givenEnv] : env.development
+const selectedEnvObj = typeof env[givenEnv] === 'object' ? env[givenEnv] : env.development
 
 module.exports = selectedEnvObj

@@ -7,7 +7,7 @@
  */
 
 const http = require('http')
-const env = require('./environment/env')
+const env = require('./.env/env')
 const { handleReqRes } = require('./helper/handleReqRes')
 
 // Main object

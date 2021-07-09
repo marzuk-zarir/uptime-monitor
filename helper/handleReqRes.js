@@ -13,6 +13,9 @@ const { StringDecoder } = require('string_decoder')
 const routes = require('../routes')
 const { notFoundHandler } = require('../router/notFoundHandler')
 
+// Utils function
+const { parsedJSON } = require('../utils/utils')
+
 const handler = {}
 
 handler.handleReqRes = (req, res) => {
@@ -39,6 +42,9 @@ handler.handleReqRes = (req, res) => {
     req.on('end', () => {
         fullData += decoder.end()
 
+        // Set full streamed data on request object property for handle request
+        requestObject.body = parsedJSON(fullData)
+
         // This callback call from routes
         selectHandler(requestObject, (statusCode, reqBody) => {
             statusCode = typeof statusCode === 'number' ? statusCode : 500
@@ -48,6 +54,7 @@ handler.handleReqRes = (req, res) => {
             const body = JSON.stringify(reqBody)
 
             // Send response to client
+            res.setHeader('Content-Type', 'application/json')
             res.writeHead(statusCode)
             res.end(body)
         })

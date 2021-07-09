@@ -7,9 +7,11 @@
  */
 
 const { sampleHandler } = require('./router/sampleHandler')
+const { userHandler } = require('./router/userHandler')
 
 const routes = {
-    sample: sampleHandler
+    sample: sampleHandler,
+    user: userHandler
 }
 
 module.exports = routes
