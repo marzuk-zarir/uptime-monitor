@@ -7,8 +7,9 @@
  */
 
 const { validatePostData } = require('../utils/validator')
-const { hash } = require('../utils/utils')
+const { hash, parsedJSON } = require('../utils/utils')
 const db = require('../lib/database')
+const { _isValidPhone: checkPhone } = require('../utils/validator')
 
 const handler = {}
 
@@ -27,9 +28,32 @@ handler.userHandler = (reqProperty, callback) => {
 
 // We declare new object with reqMethod wise func for encapsulation
 const user = {}
+
+// Handle get request
 user.get = (reqProperty, callback) => {
-    callback(200)
+    const phone = checkPhone(reqProperty.queryStrings.phone, 'string', 11)
+
+    // If provided queryString's phone field is valid, we read '.db/user/{reqBody}.json' file
+    if (phone) {
+        db.readData('user', phone, (err, data) => {
+            // Read data is json formate but we need to response object
+            const user = { ...parsedJSON(data) }
+            // We don't want to access 'password' field in get req. so, we delete pass field
+            delete user.password
+
+            // If err not happen we response user object
+            if (!err && user) {
+                callback(200, user)
+            } else {
+                callback(500, { status: "Couldn't read data" })
+            }
+        })
+    } else {
+        callback(404, { status: 'User not found' })
+    }
 }
+
+// Handle post request
 user.post = (reqProperty, callback) => {
     const isValid = validatePostData(reqProperty.body)
 
@@ -52,7 +76,11 @@ user.post = (reqProperty, callback) => {
         callback(400, { status: 'There is a problem in your request' })
     }
 }
+
+// Handle put request
 user.put = (reqProperty, callback) => {}
+
+// Handle delete request
 user.delete = (reqProperty, callback) => {}
 
 module.exports = handler
