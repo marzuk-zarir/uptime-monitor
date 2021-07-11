@@ -96,7 +96,7 @@ user.put = (reqProperty, callback) => {
                 if (firstName || lastName || password) {
                     if (firstName) userData.firstName = firstName
                     if (lastName) userData.lastName = lastName
-                    if (password) userData.password = password
+                    if (password) userData.password = hash(password)
 
                     // If valid user info provide in reqBody send success msg. otherwise throw server error
                     db.updateData('user', phone, userData, (putErr, status) => {
@@ -119,6 +119,29 @@ user.put = (reqProperty, callback) => {
 }
 
 // Handle delete request
-user.delete = (reqProperty, callback) => {}
+user.delete = (reqProperty, callback) => {
+    const phone = validatePhone(reqProperty.queryStrings.phone, 'string', 11)
+
+    // If provided queryString's phone field is valid, we read '.db/user/{reqBody}.json' file
+    if (phone) {
+        db.readData('user', phone, (readErr, data) => {
+            // If err not happen we delete file
+            if (!readErr && user) {
+                // If err not happen we response status code 200
+                db.deleteFile('user', phone, (delErr, status) => {
+                    if (!delErr && status) {
+                        callback(200, { status: 'User is deleted successfully' })
+                    } else {
+                        callback(500, { status: "Couldn't delete user" })
+                    }
+                })
+            } else {
+                callback(500, { status: "Couldn't delete user" })
+            }
+        })
+    } else {
+        callback(400, { status: 'User not found' })
+    }
+}
 
 module.exports = handler
