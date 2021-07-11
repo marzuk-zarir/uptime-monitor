@@ -8,10 +8,10 @@
 
 const validator = {}
 
-validator.validatePostData = ({ firstName, lastName, phone, password, termsAgree }) => {
+validator.validateUserData = ({ firstName, lastName, phone, password, termsAgree }) => {
     firstName = validator._isValidName(firstName, 'string')
     lastName = validator._isValidName(lastName, 'string')
-    phone = validator._isValidPhone(phone, 'string', 11)
+    phone = validator._isValidPhone(phone, 'string')
     password = validator._isValidPassword(password)
     termsAgree = typeof termsAgree === 'boolean' ? termsAgree : false
 
@@ -21,6 +21,16 @@ validator.validatePostData = ({ firstName, lastName, phone, password, termsAgree
     }
 
     return false
+}
+
+// Validate put data
+validator.validatePutData = ({ firstName, lastName, phone, password }) => {
+    firstName = validator._isValidName(firstName, 'string')
+    lastName = validator._isValidName(lastName, 'string')
+    phone = validator._isValidPhone(phone, 'string')
+    password = validator._isValidPassword(password, 'string')
+
+    return { firstName, lastName, phone, password }
 }
 
 /**
@@ -39,7 +49,7 @@ validator._isValidName = (nameField, type) => {
 }
 
 // Check is phone number trimmed length is greater than provided length
-validator._isValidPhone = (phoneField, type, phoneLength) => {
+validator._isValidPhone = (phoneField, type, phoneLength = 11) => {
     return typeof phoneField === type && phoneField?.trim()?.length === phoneLength
         ? phoneField?.trim()
         : false
