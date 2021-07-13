@@ -14,4 +14,4 @@ handler.notFoundHandler = (reqProperty, callback) => {
     })
 }
 
-module.exports = handler
+module.exports = handler.notFoundHandler

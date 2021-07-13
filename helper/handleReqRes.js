@@ -10,8 +10,8 @@ const url = require('url')
 const { StringDecoder } = require('string_decoder')
 
 // Routes handler
-const routes = require('../routes')
-const { notFoundHandler } = require('../router/notFoundHandler')
+const routes = require('../router/routes')
+const notFoundHandler = require('../router/notFoundHandler')
 
 // Utils function
 const { parsedJSON } = require('../utils/utils')

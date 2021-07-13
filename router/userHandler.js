@@ -23,17 +23,17 @@ handler.userHandler = (reqProperty, callback) => {
     // Check reqMethod is allowed. if not send status code 405(Method not allowed)
     if (allowedMethods.indexOf(reqProperty.reqMethod) > -1) {
         // Allowed reqMethod wise calling function and pass reqProp and callback
-        user[reqProperty.reqMethod](reqProperty, callback)
+        handler._user[reqProperty.reqMethod](reqProperty, callback)
     } else {
         callback(405)
     }
 }
 
-// We declare new object with reqMethod wise func for encapsulation
-const user = {}
+// Private object
+handler._user = {}
 
 // Handle get request
-user.get = (reqProperty, callback) => {
+handler._user.get = (reqProperty, callback) => {
     const phone = validatePhone(reqProperty.queryStrings.phone, 'string', 11)
 
     // If provided queryString's phone field is valid, we read '.db/user/{reqBody}.json' file
@@ -57,7 +57,7 @@ user.get = (reqProperty, callback) => {
 }
 
 // Handle post request
-user.post = (reqProperty, callback) => {
+handler._user.post = (reqProperty, callback) => {
     const isValid = validateUserData(reqProperty.body)
 
     // If requestBody is valid we read '.db/user/{reqBody.phone}.json' file
@@ -81,7 +81,7 @@ user.post = (reqProperty, callback) => {
 }
 
 // Handle put/update request
-user.put = (reqProperty, callback) => {
+handler._user.put = (reqProperty, callback) => {
     const { firstName, lastName, phone, password } = validatePutData(reqProperty.body)
 
     // If requestBody is valid we read '.db/user/{reqBody.phone}.json' file
@@ -119,14 +119,14 @@ user.put = (reqProperty, callback) => {
 }
 
 // Handle delete request
-user.delete = (reqProperty, callback) => {
-    const phone = validatePhone(reqProperty.queryStrings.phone, 'string', 11)
+handler._user.delete = (reqProperty, callback) => {
+    const phone = validatePhone(reqProperty.queryStrings.phone, 'string')
 
     // If provided queryString's phone field is valid, we read '.db/user/{reqBody}.json' file
     if (phone) {
         db.readData('user', phone, (readErr, data) => {
             // If err not happen we delete file
-            if (!readErr && user) {
+            if (!readErr && data) {
                 // If err not happen we response status code 200
                 db.deleteFile('user', phone, (delErr, status) => {
                     if (!delErr && status) {
@@ -144,4 +144,4 @@ user.delete = (reqProperty, callback) => {
     }
 }
 
-module.exports = handler
+module.exports = handler.userHandler
