@@ -48,7 +48,7 @@ handler._user.get = (reqProperty, callback) => {
             if (!readErr && user) {
                 callback(200, user)
             } else {
-                callback(500, { status: "Couldn't read data" })
+                callback(500, { status: "Couldn't access data" })
             }
         })
     } else {
@@ -66,9 +66,9 @@ handler._user.post = (reqProperty, callback) => {
             if (readErr) {
                 // If not we create a user in '.db/user' folder
                 isValid.password = hash(isValid.password)
-                db.createData('user', isValid.phone, isValid, (CrtErr, status) => {
-                    if (CrtErr) callback(500, { status: "Couldn't create user" })
-                    else callback(200, { status: 'User created successfully' })
+                db.createData('user', isValid.phone, isValid, (crtErr, crtStatus) => {
+                    if (!crtErr && crtStatus) callback(200, { status: 'User created successfully' })
+                    else callback(500, { status: "Couldn't create user" })
                 })
             } else {
                 // If read file successfully we send error that 'user is already exist'
@@ -86,9 +86,9 @@ handler._user.put = (reqProperty, callback) => {
 
     // If requestBody is valid we read '.db/user/{reqBody.phone}.json' file
     if (phone) {
-        db.readData('user', phone, (readErr, data) => {
+        db.readData('user', phone, (readErr, readData) => {
             // Parse json into js obj
-            const userData = { ...parsedJSON(data) }
+            const userData = { ...parsedJSON(readData) }
 
             // If read file is empty we throw client error
             if (!readErr && userData) {
@@ -99,8 +99,8 @@ handler._user.put = (reqProperty, callback) => {
                     if (password) userData.password = hash(password)
 
                     // If valid user info provide in reqBody send success msg. otherwise throw server error
-                    db.updateData('user', phone, userData, (putErr, status) => {
-                        if (!putErr && status) {
+                    db.updateData('user', phone, userData, (putErr, putStatus) => {
+                        if (!putErr && putStatus) {
                             callback(200, { status: 'User information updated successfully' })
                         } else {
                             callback(500, { status: "Couldn't update user info" })
@@ -124,12 +124,12 @@ handler._user.delete = (reqProperty, callback) => {
 
     // If provided queryString's phone field is valid, we read '.db/user/{reqBody}.json' file
     if (phone) {
-        db.readData('user', phone, (readErr, data) => {
+        db.readData('user', phone, (readErr, readData) => {
             // If err not happen we delete file
-            if (!readErr && data) {
+            if (!readErr && readData) {
                 // If err not happen we response status code 200
-                db.deleteFile('user', phone, (delErr, status) => {
-                    if (!delErr && status) {
+                db.deleteFile('user', phone, (delErr, delStatus) => {
+                    if (!delErr && delStatus) {
                         callback(200, { status: 'User is deleted successfully' })
                     } else {
                         callback(500, { status: "Couldn't delete user" })

@@ -116,3 +116,4 @@ dist
 # custom file
 playground.js
 /.db/user/*.json
+/.db/token/*.json
