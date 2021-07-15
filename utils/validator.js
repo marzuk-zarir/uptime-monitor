@@ -9,9 +9,9 @@
 const validator = {}
 
 validator.validateUserData = ({ firstName, lastName, phone, password, termsAgree }) => {
-    firstName = validator._isValidName(firstName, 'string')
-    lastName = validator._isValidName(lastName, 'string')
-    phone = validator._isValidPhone(phone, 'string')
+    firstName = validator._isValidName(firstName)
+    lastName = validator._isValidName(lastName)
+    phone = validator._isValidPhone(phone)
     password = validator._isValidPassword(password)
     termsAgree = typeof termsAgree === 'boolean' ? termsAgree : false
 
@@ -25,10 +25,10 @@ validator.validateUserData = ({ firstName, lastName, phone, password, termsAgree
 
 // Validate put data
 validator.validatePutData = ({ firstName, lastName, phone, password }) => {
-    firstName = validator._isValidName(firstName, 'string')
-    lastName = validator._isValidName(lastName, 'string')
-    phone = validator._isValidPhone(phone, 'string')
-    password = validator._isValidPassword(password, 'string')
+    firstName = validator._isValidName(firstName)
+    lastName = validator._isValidName(lastName)
+    phone = validator._isValidPhone(phone)
+    password = validator._isValidPassword(password)
 
     return { firstName, lastName, phone, password }
 }
@@ -40,7 +40,7 @@ validator.validatePutData = ({ firstName, lastName, phone, password }) => {
  */
 
 // Check is name trimmed length is greater than 0 and less than 10 character
-validator._isValidName = (nameField, type) => {
+validator._isValidName = (nameField, type = 'string') => {
     nameField = nameField?.trim()
     if (typeof nameField === type && nameField?.length > 0 && nameField?.length <= 10) {
         return nameField
@@ -49,15 +49,20 @@ validator._isValidName = (nameField, type) => {
 }
 
 // Check is phone number trimmed length is greater than provided length
-validator._isValidPhone = (phoneField, type, phoneLength = 11) => {
+validator._isValidPhone = (phoneField, type = 'string', phoneLength = 11) => {
     return typeof phoneField === type && phoneField?.trim()?.length === phoneLength
         ? phoneField?.trim()
         : false
 }
 
 // Check is password length is greater than 8 character
-validator._isValidPassword = (passwordField) => {
-    return typeof passwordField === 'string' && passwordField?.length >= 8 ? passwordField : false
+validator._isValidPassword = (passwordField, type = 'string') => {
+    return typeof passwordField === type && passwordField?.length >= 8 ? passwordField : false
+}
+
+// Check is auth token's length is similar with provided length
+validator._isValidToken = (token, length = 20, type = 'string') => {
+    return typeof token === type && token?.trim()?.length === length ? token?.trim() : false
 }
 
 module.exports = validator

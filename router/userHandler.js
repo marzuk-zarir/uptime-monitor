@@ -7,11 +7,13 @@
  */
 
 const { hash, parsedJSON } = require('../utils/utils')
+const { verifyToken } = require('../utils/verifyToken')
 const db = require('../lib/database')
 const {
     validateUserData,
     _isValidPhone: validatePhone,
-    validatePutData
+    validatePutData,
+    _isValidToken: validateToken
 } = require('../utils/validator')
 
 const handler = {}
@@ -32,31 +34,35 @@ handler.userHandler = (reqProperty, callback) => {
 // Private object
 handler._user = {}
 
-// Handle get request
+// Handle get request (authentication needed)
 handler._user.get = (reqProperty, callback) => {
-    const phone = validatePhone(reqProperty.queryStrings.phone, 'string', 11)
+    const phone = validatePhone(reqProperty.queryStrings.phone)
+    // Validate token which is send by client in request header
+    const tokenId = validateToken(reqProperty.reqHeader.token)
 
     // If provided queryString's phone field is valid, we read '.db/user/{reqBody}.json' file
     if (phone) {
-        db.readData('user', phone, (readErr, data) => {
-            // Read data is json formate but we need to response object
-            const user = { ...parsedJSON(data) }
-            // We don't want to access 'password' field in get req. so, we delete pass field
-            delete user.password
-
-            // If err not happen we response user object
-            if (!readErr && user) {
-                callback(200, user)
-            } else {
-                callback(500, { status: "Couldn't access data" })
-            }
+        verifyToken(phone, tokenId, (isTokenExist) => {
+            db.readData('user', phone, (readErr, readData) => {
+                if (!readErr && readData) {
+                    if (isTokenExist) {
+                        const user = { ...parsedJSON(readData) }
+                        delete user.password
+                        callback(200, user)
+                    } else {
+                        callback(401, { status: 'Authentication failed' })
+                    }
+                } else {
+                    callback(404, { status: 'User not found' })
+                }
+            })
         })
     } else {
-        callback(404, { status: 'User not found' })
+        callback(400, { status: 'There was problem in your request' })
     }
 }
 
-// Handle post request
+// Handle post request (not need authentication)
 handler._user.post = (reqProperty, callback) => {
     const isValid = validateUserData(reqProperty.body)
 
@@ -80,67 +86,80 @@ handler._user.post = (reqProperty, callback) => {
     }
 }
 
-// Handle put/update request
+// Handle put/update request (authentication needed)
 handler._user.put = (reqProperty, callback) => {
     const { firstName, lastName, phone, password } = validatePutData(reqProperty.body)
+    const tokenId = validateToken(reqProperty.reqHeader.token)
 
     // If requestBody is valid we read '.db/user/{reqBody.phone}.json' file
     if (phone) {
-        db.readData('user', phone, (readErr, readData) => {
-            // Parse json into js obj
-            const userData = { ...parsedJSON(readData) }
+        verifyToken(phone, tokenId, (isTokenExist) => {
+            db.readData('user', phone, (readErr, readData) => {
+                const userData = { ...parsedJSON(readData) }
+                if (!readErr && userData) {
+                    if (isTokenExist) {
+                        // If valid user info not provide in reqBody throw client error
+                        if (firstName || lastName || password) {
+                            if (firstName) userData.firstName = firstName
+                            if (lastName) userData.lastName = lastName
+                            if (password) userData.password = hash(password)
 
-            // If read file is empty we throw client error
-            if (!readErr && userData) {
-                // If valid user info not provide in reqBody throw client error
-                if (firstName || lastName || password) {
-                    if (firstName) userData.firstName = firstName
-                    if (lastName) userData.lastName = lastName
-                    if (password) userData.password = hash(password)
-
-                    // If valid user info provide in reqBody send success msg. otherwise throw server error
-                    db.updateData('user', phone, userData, (putErr, putStatus) => {
-                        if (!putErr && putStatus) {
-                            callback(200, { status: 'User information updated successfully' })
+                            // If valid user info provide in reqBody send success msg. otherwise throw server error
+                            db.updateData('user', phone, userData, (putErr, putStatus) => {
+                                if (!putErr && putStatus) {
+                                    callback(200, {
+                                        status: 'User information updated successfully'
+                                    })
+                                } else {
+                                    callback(500, { status: "Couldn't update user info" })
+                                }
+                            })
                         } else {
-                            callback(500, { status: "Couldn't update user info" })
+                            callback(400, { status: 'Field should follow the requirements' })
                         }
-                    })
+                    } else {
+                        callback(401, { status: 'Authentication failed' })
+                    }
                 } else {
-                    callback(400, { status: 'Field should follow the requirements' })
+                    callback(400, { status: 'There was problem in your request' })
                 }
-            } else {
-                callback(400, { status: 'User info not found' })
-            }
+            })
         })
     } else {
         callback(400, { status: 'Invalid Phone field' })
     }
 }
 
-// Handle delete request
+// Handle delete request (authentication needed)
 handler._user.delete = (reqProperty, callback) => {
-    const phone = validatePhone(reqProperty.queryStrings.phone, 'string')
+    const phone = validatePhone(reqProperty.queryStrings.phone)
+    const tokenId = validateToken(reqProperty.reqHeader.token)
 
     // If provided queryString's phone field is valid, we read '.db/user/{reqBody}.json' file
     if (phone) {
-        db.readData('user', phone, (readErr, readData) => {
-            // If err not happen we delete file
-            if (!readErr && readData) {
-                // If err not happen we response status code 200
-                db.deleteFile('user', phone, (delErr, delStatus) => {
-                    if (!delErr && delStatus) {
-                        callback(200, { status: 'User is deleted successfully' })
+        verifyToken(phone, tokenId, (isTokenExist) => {
+            db.readData('user', phone, (readErr, readData) => {
+                // If err not happen we delete file
+                if (!readErr && readData) {
+                    if (isTokenExist) {
+                        // If err not happen we response status code 200
+                        db.deleteFile('user', phone, (delErr, delStatus) => {
+                            if (!delErr && delStatus) {
+                                callback(200, { status: 'User is deleted successfully' })
+                            } else {
+                                callback(500, { status: "Couldn't delete user" })
+                            }
+                        })
                     } else {
-                        callback(500, { status: "Couldn't delete user" })
+                        callback(401, { status: 'Authentication failed' })
                     }
-                })
-            } else {
-                callback(500, { status: "Couldn't delete user" })
-            }
+                } else {
+                    callback(404, { status: 'User is not found' })
+                }
+            })
         })
     } else {
-        callback(400, { status: 'User not found' })
+        callback(400, { status: 'There was a problem in your request' })
     }
 }
 

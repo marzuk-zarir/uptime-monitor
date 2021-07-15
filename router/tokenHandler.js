@@ -10,7 +10,8 @@ const db = require('../lib/database')
 const { parsedJSON, generateToken, hash } = require('../utils/utils')
 const {
     _isValidPhone: validatePhone,
-    _isValidPassword: validatePass
+    _isValidPassword: validatePass,
+    _isValidToken: validateToken
 } = require('../utils/validator')
 
 const handler = {}
@@ -33,12 +34,28 @@ handler._token = {}
 
 // Handle get token
 handler._token.get = (reqProperty, callback) => {
-    callback(200, { status: 'token route is fine' })
+    const tokenId = validateToken(reqProperty.queryStrings.id)
+
+    // If provided queryString's id field is valid, we read '.db/token/{reqBody}.json' file
+    if (tokenId) {
+        db.readData('token', tokenId, (readErr, tokenData) => {
+            // Read data is json formate but we need to response object
+            const tokenObj = { ...parsedJSON(tokenData) }
+            // If err not happen we response tokenObj object
+            if (!readErr && tokenObj) {
+                callback(200, tokenObj)
+            } else {
+                callback(404, { status: 'Token is not found' })
+            }
+        })
+    } else {
+        callback(400, { status: 'Invalid token id' })
+    }
 }
 
 // Handle post token
 handler._token.post = (reqProperty, callback) => {
-    const phone = validatePhone(reqProperty.body.phone, 'string')
+    const phone = validatePhone(reqProperty.body.phone)
     const password = validatePass(reqProperty.body.password)
 
     // If requestBody is valid we read '.db/user/{reqBody.phone}.json' file
@@ -64,7 +81,7 @@ handler._token.post = (reqProperty, callback) => {
                     callback(400, { status: "Password doesn't match" })
                 }
             } else {
-                callback(500, { status: "Couldn't access user" })
+                callback(404, { status: 'User not found' })
             }
         })
     } else {
@@ -73,9 +90,62 @@ handler._token.post = (reqProperty, callback) => {
 }
 
 // Handle put/update token
-handler._token.put = (reqProperty, callback) => {}
+handler._token.put = (reqProperty, callback) => {
+    const tokenId = validateToken(reqProperty.body.id)
+    const extend = typeof reqProperty.body.extend === 'boolean' ? true : false
+
+    // If requestBody is valid we read '.db/token/{tokenId}.json' file
+    if (tokenId && extend) {
+        db.readData('token', tokenId, (readErr, readData) => {
+            const tokenData = { ...parsedJSON(readData) }
+            if (!readErr && tokenData) {
+                if (tokenData.expire > Date.now()) {
+                    // Extend token for 30 minutes
+                    tokenData.expire = Date.now() + 30 * 60 * 1000
+                    // Store updated expire time
+                    db.updateData('token', tokenId, tokenData, (upErr, upStatus) => {
+                        if (!upErr && upStatus) {
+                            callback(200, {
+                                status: 'Token is successfully extended for 30 minutes from now'
+                            })
+                        } else {
+                            callback(500, { status: "Couldn't extend expire time" })
+                        }
+                    })
+                } else {
+                    callback(400, { status: 'Token already expire' })
+                }
+            } else {
+                callback(404, { status: 'Token is not found' })
+            }
+        })
+    } else {
+        callback(400, { status: 'There is a problem in your request' })
+    }
+}
 
 // Handle delete token
-handler._token.delete = (reqProperty, callback) => {}
+handler._token.delete = (reqProperty, callback) => {
+    const tokenId = validateToken(reqProperty.queryStrings.id)
+
+    // If provided queryString's id field is valid, we read '.db/token/{tokenId}.json' file
+    if (tokenId) {
+        db.readData('token', tokenId, (readErr, readData) => {
+            if (!readErr && readData) {
+                db.deleteFile('token', tokenId, (delErr, delStatus) => {
+                    if (!delErr && delStatus) {
+                        callback(200, { status: 'Token is deleted successfully' })
+                    } else {
+                        callback(500, { status: "Couldn't delete Token" })
+                    }
+                })
+            } else {
+                callback(404, { status: 'Token is not found' })
+            }
+        })
+    } else {
+        callback(400, { status: 'There was a problem in your request' })
+    }
+}
 
 module.exports = handler.tokenHandler
