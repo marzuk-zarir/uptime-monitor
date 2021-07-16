@@ -33,6 +33,21 @@ validator.validatePutData = ({ firstName, lastName, phone, password }) => {
     return { firstName, lastName, phone, password }
 }
 
+// Validate check data
+validator.validateCheckData = ({ protocol, url, method, successCode, timeout }) => {
+    protocol = validator._check.protocol(protocol, ['http', 'https'])
+    url = validator._check.url(url)
+    method = validator._check.method(method)
+    successCode = validator._check.successCodes(successCode)
+    timeout = validator._check.timeout(timeout)
+
+    if (protocol && url && method && successCode && timeout) {
+        return { protocol, url, method, successCode, timeout }
+    }
+
+    return false
+}
+
 /**
  * ! Utility function for this file
  * * function contains 'optional chaining' feature which is introduced in es11 in js
@@ -61,8 +76,70 @@ validator._isValidPassword = (passwordField, type = 'string') => {
 }
 
 // Check is auth token's length is similar with provided length
-validator._isValidToken = (token, length = 20, type = 'string') => {
+validator.validateToken = (token, length = 20, type = 'string') => {
     return typeof token === type && token?.trim()?.length === length ? token?.trim() : false
+}
+
+// Check is checkId's length is similar with provided length
+validator.validateCheck = (check, length = 20, type = 'string') => {
+    return typeof check === type && check?.trim()?.length === length ? check?.trim() : false
+}
+
+// ? Validate all check related property
+validator._check = {}
+
+// Validate protocol as allowedProtocol array
+validator._check.protocol = (givenProtocol, allowedProtocols, type = 'string') => {
+    const protocol =
+        typeof givenProtocol === type && allowedProtocols?.indexOf(givenProtocol) > -1
+            ? givenProtocol
+            : false
+    if (protocol) {
+        return protocol
+    }
+    return false
+}
+// Validate url
+validator._check.url = (url) => {
+    url = typeof url === 'string' && url?.trim()?.length > 0 ? url?.trim() : false
+    if (url) {
+        return url
+    }
+    return false
+}
+// Validate method
+validator._check.method = (givenMethod, type = 'string') => {
+    const allowedMethods = ['get', 'post', 'put', 'delete']
+    const method =
+        typeof givenMethod === type && allowedMethods.indexOf(givenMethod) > -1
+            ? givenMethod
+            : false
+    if (method) {
+        return method
+    }
+    return false
+}
+// Validate successCode
+validator._check.successCodes = (successCodes, type = 'object') => {
+    const codes =
+        typeof successCodes === type &&
+        Array.isArray(successCodes) &&
+        successCodes.every((code) => typeof code === 'number')
+            ? successCodes
+            : false
+    if (codes) {
+        return codes
+    }
+    return false
+}
+// Validate timeout (minimum timeout is 7 seconds)
+validator._check.timeout = (timeoutSec, type = 'number') => {
+    const timeout =
+        typeof timeoutSec === type && timeoutSec > 0 && timeoutSec <= 7 ? timeoutSec : false
+    if (timeout) {
+        return timeout
+    }
+    return false
 }
 
 module.exports = validator

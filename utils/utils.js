@@ -33,17 +33,17 @@ utils.hash = (strData) => {
     return false
 }
 
-// Generate a uniq token as provided length
-utils.generateToken = (tokenLength) => {
-    let length = typeof tokenLength === 'number' && tokenLength > 0 ? tokenLength : false
+// Generate a uniq string as provided length
+utils.generateString = (stringLength) => {
+    let length = typeof stringLength === 'number' && stringLength > 0 ? stringLength : false
     if (length) {
         const possibleChar = 'abcdefghijklmnopqrstuvwxyz0123456789'
-        let token = ''
+        let string = ''
         for (let i = 0; i < length; i++) {
             const randomIndex = Math.round(Math.random() * possibleChar.length)
-            token += possibleChar.charAt(randomIndex)
+            string += possibleChar.charAt(randomIndex)
         }
-        return token
+        return string
     }
     return false
 }

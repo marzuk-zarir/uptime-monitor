@@ -7,11 +7,11 @@
  */
 
 const db = require('../lib/database')
-const { parsedJSON, generateToken, hash } = require('../utils/utils')
+const { parsedJSON, generateString, hash } = require('../utils/utils')
 const {
     _isValidPhone: validatePhone,
     _isValidPassword: validatePass,
-    _isValidToken: validateToken
+    validateToken
 } = require('../utils/validator')
 
 const handler = {}
@@ -67,7 +67,7 @@ handler._token.post = (reqProperty, callback) => {
             if (!readErr && readData) {
                 // If reqBody hash password match with stored hash password
                 if (hashedPassword === parsedJSON(readData).password) {
-                    const token = generateToken(20)
+                    const token = generateString(20)
                     const expire = Date.now() + 60 * 60 * 1000
                     const tokenObject = { id: token, expire, phone }
                     // We response a unique token and store this token in '.db/token/{token}.json' file

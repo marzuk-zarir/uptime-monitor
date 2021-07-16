@@ -117,3 +117,4 @@ dist
 playground.js
 /.db/user/*.json
 /.db/token/*.json
+/.db/check/*.json

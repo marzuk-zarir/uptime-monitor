@@ -12,14 +12,16 @@ const env = {}
 env.development = {
     port: 3000,
     env: 'development',
-    secretKey: 'fWwnQtE0wu'
+    secretKey: 'fWwnQtE0wu',
+    maxChecks: 5
 }
 
 // Production environment
 env.production = {
     port: 6000,
     env: 'production',
-    secretKey: "H/JvU@'5#}k}MBkbYqDXVLonY2O8]7"
+    secretKey: "H/JvU@'5#}k}MBkbYqDXVLonY2O8]7",
+    maxChecks: 5
 }
 
 // Grab which environment user pass to run this app (default: 'development')

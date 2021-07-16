@@ -13,7 +13,7 @@ const {
     validateUserData,
     _isValidPhone: validatePhone,
     validatePutData,
-    _isValidToken: validateToken
+    validateToken
 } = require('../utils/validator')
 
 const handler = {}
@@ -50,7 +50,7 @@ handler._user.get = (reqProperty, callback) => {
                         delete user.password
                         callback(200, user)
                     } else {
-                        callback(401, { status: 'Authentication failed' })
+                        callback(403, { status: 'Authentication failed' })
                     }
                 } else {
                     callback(404, { status: 'User not found' })
@@ -118,7 +118,7 @@ handler._user.put = (reqProperty, callback) => {
                             callback(400, { status: 'Field should follow the requirements' })
                         }
                     } else {
-                        callback(401, { status: 'Authentication failed' })
+                        callback(403, { status: 'Authentication failed' })
                     }
                 } else {
                     callback(400, { status: 'There was problem in your request' })
@@ -151,7 +151,7 @@ handler._user.delete = (reqProperty, callback) => {
                             }
                         })
                     } else {
-                        callback(401, { status: 'Authentication failed' })
+                        callback(403, { status: 'Authentication failed' })
                     }
                 } else {
                     callback(404, { status: 'User is not found' })
