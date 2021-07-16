@@ -8,10 +8,12 @@
 
 const userHandler = require('./userHandler')
 const tokenHandler = require('./tokenHandler')
+const checkHandler = require('./checkHandler')
 
 const routes = {
     user: userHandler,
-    token: tokenHandler
+    token: tokenHandler,
+    check: checkHandler
 }
 
 module.exports = routes
