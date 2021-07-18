@@ -118,3 +118,6 @@ playground.js
 /.db/user/*.json
 /.db/token/*.json
 /.db/check/*.json
+
+# temp dir
+/helper/notifications

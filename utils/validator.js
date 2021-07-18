@@ -8,6 +8,7 @@
 
 const validator = {}
 
+// Validate user data ( 'post' request method )
 validator.validateUserData = ({ firstName, lastName, phone, password, termsAgree }) => {
     firstName = validator._isValidName(firstName)
     lastName = validator._isValidName(lastName)
@@ -23,7 +24,7 @@ validator.validateUserData = ({ firstName, lastName, phone, password, termsAgree
     return false
 }
 
-// Validate put data
+// Validate user data ( 'put' request method )
 validator.validatePutData = ({ firstName, lastName, phone, password }) => {
     firstName = validator._isValidName(firstName)
     lastName = validator._isValidName(lastName)
@@ -33,7 +34,7 @@ validator.validatePutData = ({ firstName, lastName, phone, password }) => {
     return { firstName, lastName, phone, password }
 }
 
-// Validate check data
+// Validate check data ( 'post' request method )
 validator.validateCheckData = ({ protocol, url, method, successCode, timeout }) => {
     protocol = validator._check.protocol(protocol, ['http', 'https'])
     url = validator._check.url(url)
@@ -46,6 +47,17 @@ validator.validateCheckData = ({ protocol, url, method, successCode, timeout }) 
     }
 
     return false
+}
+
+// Validate check data ( 'put' request method )
+validator.validatePutCheck = ({ protocol, url, method, successCode, timeout }) => {
+    protocol = validator._check.protocol(protocol, ['http', 'https'])
+    url = validator._check.url(url)
+    method = validator._check.method(method)
+    successCode = validator._check.successCodes(successCode)
+    timeout = validator._check.timeout(timeout)
+
+    return { protocol, url, method, successCode, timeout }
 }
 
 /**

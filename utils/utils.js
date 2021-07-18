@@ -17,7 +17,6 @@ utils.parsedJSON = (jsonData) => {
     try {
         data = JSON.parse(jsonData)
     } catch (e) {
-        console.log(e.message)
         data = {}
     } finally {
         return data
@@ -37,15 +36,28 @@ utils.hash = (strData) => {
 utils.generateString = (stringLength) => {
     let length = typeof stringLength === 'number' && stringLength > 0 ? stringLength : false
     if (length) {
-        const possibleChar = 'abcdefghijklmnopqrstuvwxyz0123456789'
+        const possibleChar =
+            '0123456789abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
         let string = ''
         for (let i = 0; i < length; i++) {
-            const randomIndex = Math.round(Math.random() * possibleChar.length)
+            const randomIndex = Math.floor(Math.random() * possibleChar.length)
             string += possibleChar.charAt(randomIndex)
         }
         return string
     }
     return false
+}
+
+utils.updateCheckField = (checkObj, fieldObject) => {
+    if (typeof fieldObject === 'object' && !Array.isArray(fieldObject)) {
+        for (let field in checkObj) {
+            if (fieldObject[field]) {
+                checkObj[field] = fieldObject[field]
+            }
+        }
+    } else {
+        return false
+    }
 }
 
 module.exports = utils

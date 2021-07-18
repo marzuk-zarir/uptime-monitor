@@ -8,9 +8,14 @@
 
 const db = require('../lib/database')
 const { maxChecks } = require('../.env/env')
-const { parsedJSON, generateString } = require('../utils/utils')
+const { parsedJSON, generateString, updateCheckField } = require('../utils/utils')
 const { verifyToken } = require('../utils/verifyToken')
-const { validateCheckData, validateToken, validateCheck } = require('../utils/validator')
+const {
+    validateCheckData,
+    validateToken,
+    validateCheck,
+    validatePutCheck
+} = require('../utils/validator')
 
 const handler = {}
 
@@ -30,34 +35,35 @@ handler.checkHandler = (reqProperty, callback) => {
 // Private object
 handler._check = {}
 
+// Show checks ( authentication needed )
 handler._check.get = (reqProperty, callback) => {
-    const checkId = validateCheck(reqProperty.queryStrings.check)
+    const checkId = validateCheck(reqProperty.queryStrings.id)
     const tokenId = validateToken(reqProperty.reqHeader.token)
 
     if (checkId) {
         db.readData('check', checkId, (readErr, readData) => {
-            const checkData = parsedJSON(readData)
-            verifyToken(checkData?.phone, tokenId, (isAuth) => {
-                if (isAuth) {
-                    if (!readErr && checkData) {
+            if (!readErr && readData) {
+                const checkData = parsedJSON(readData)
+                verifyToken(checkData?.phone, tokenId, (isAuth) => {
+                    if (isAuth) {
                         callback(200, checkData)
                     } else {
-                        callback(404, { status: 'Check not found' })
+                        callback(403, { status: 'Authentication failed' })
                     }
-                } else {
-                    callback(403, { status: 'Authentication failed' })
-                }
-            })
+                })
+            } else {
+                callback(404, { status: 'Check not found' })
+            }
         })
     } else {
         callback(400, { status: 'There was a problem in your request' })
     }
 }
 
-// Create checks ( authentication needed )
+// Create checks
 handler._check.post = (reqProperty, callback) => {
     const checkData = validateCheckData(reqProperty.body)
-    const tokenId = isValidToken(reqProperty.reqHeader.token)
+    const tokenId = validateToken(reqProperty.reqHeader.token)
 
     if (checkData) {
         db.readData('token', tokenId, (tReadErr, tokenData) => {
@@ -131,8 +137,109 @@ handler._check.post = (reqProperty, callback) => {
     }
 }
 
-handler._check.put = (reqProperty, callback) => {}
+// Update checks ( authentication needed )
+handler._check.put = (reqProperty, callback) => {
+    const tokenId = validateToken(reqProperty.reqHeader.token)
+    const checkId = validateCheck(reqProperty.body.id)
+    const { protocol, url, method, successCode, timeout } = validatePutCheck(reqProperty.body)
 
-handler._check.delete = (reqProperty, callback) => {}
+    if (checkId) {
+        db.readData('check', checkId, (readErr, readData) => {
+            if (!readErr && readData) {
+                const checkObj = parsedJSON(readData)
+                // Verify token
+                verifyToken(checkObj.phone, tokenId, (isExist) => {
+                    if (isExist) {
+                        if (protocol || url || method || successCode || timeout) {
+                            // Update field in CheckObj
+                            updateCheckField(checkObj, {
+                                protocol: protocol,
+                                url: url,
+                                method: method,
+                                successCode: successCode,
+                                timeout: timeout
+                            })
+                            // Update check in '.db/check/{checkId}.json' file
+                            db.updateData('check', checkId, checkObj, (upErr, upStatus) => {
+                                if (!upErr && upStatus) {
+                                    callback(200, { status: 'Check data updated successfully' })
+                                } else {
+                                    callback(500, { status: "Couldn't update check data" })
+                                }
+                            })
+                        } else {
+                            callback(400, { status: 'There was a problem in your request' })
+                        }
+                    } else {
+                        callback(403, { status: 'Authentication failed' })
+                    }
+                })
+            } else {
+                callback(404, { status: 'Check id not found' })
+            }
+        })
+    } else {
+        callback(400, { status: 'There was a problem in your request' })
+    }
+}
+
+// Delete checks ( authentication needed )
+handler._check.delete = (reqProperty, callback) => {
+    const tokenId = validateToken(reqProperty.reqHeader.token)
+    const checkId = validateCheck(reqProperty.queryStrings.id)
+
+    if (checkId) {
+        db.readData('check', checkId, (cReadErr, cReadData) => {
+            if (!cReadErr && cReadData) {
+                const phone = parsedJSON(cReadData).phone
+                verifyToken(phone, tokenId, (isAuth) => {
+                    if (isAuth) {
+                        db.deleteFile('check', checkId, (delErr, delStatus) => {
+                            if (!delErr && delStatus) {
+                                // Read 'user' folder with check's phone field
+                                db.readData('user', phone, (uReadErr, uReadData) => {
+                                    if (!uReadErr && uReadData) {
+                                        const userObject = parsedJSON(uReadData)
+                                        // Remove check id form '.db/user/{phone}.json'
+                                        userObject.checks = userObject.checks.filter(
+                                            (check) => !(check === checkId)
+                                        )
+                                        // Update after removed check in '.db/user/phone}.json'
+                                        db.updateData(
+                                            'user',
+                                            phone,
+                                            userObject,
+                                            (upErr, upStatus) => {
+                                                if (!upErr && upStatus) {
+                                                    callback(200, {
+                                                        status: 'Check is remove successfully'
+                                                    })
+                                                } else {
+                                                    callback(500, {
+                                                        status: "Couldn't access user checks"
+                                                    })
+                                                }
+                                            }
+                                        )
+                                    } else {
+                                        callback(500, { status: "Couldn't access user" })
+                                    }
+                                })
+                            } else {
+                                callback(500, { status: "Couldn't access check id" })
+                            }
+                        })
+                    } else {
+                        callback(403, { status: 'Authentication failed' })
+                    }
+                })
+            } else {
+                callback(404, { status: 'Check id not found' })
+            }
+        })
+    } else {
+        callback(400, { status: 'There was a problem in your request' })
+    }
+}
 
 module.exports = handler.checkHandler
