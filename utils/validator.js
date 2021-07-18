@@ -97,6 +97,15 @@ validator.validateCheck = (check, length = 20, type = 'string') => {
     return typeof check === type && check?.trim()?.length === length ? check?.trim() : false
 }
 
+// Check is msg's length is similar with provided length
+validator.validateMsg = (msgBody, maxLength = 1600) => {
+    return typeof msgBody === 'string' &&
+        msgBody?.trim()?.length > 0 &&
+        msgBody?.trim()?.length <= maxLength
+        ? msgBody.trim()
+        : false
+}
+
 // ? Validate all check related property
 validator._check = {}
 
@@ -150,6 +159,17 @@ validator._check.timeout = (timeoutSec, type = 'number') => {
         typeof timeoutSec === type && timeoutSec > 0 && timeoutSec <= 7 ? timeoutSec : false
     if (timeout) {
         return timeout
+    }
+    return false
+}
+
+// Validate twilio SMS
+validator.validateSms = (phone, msg) => {
+    phone = validator._isValidPhone(phone)
+    msg = validator.validateMsg(msg)
+
+    if (phone && msg) {
+        return { phone, msg }
     }
     return false
 }

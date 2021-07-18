@@ -13,7 +13,12 @@ env.development = {
     port: 3000,
     env: 'development',
     secretKey: 'fWwnQtE0wu',
-    maxChecks: 5
+    maxChecks: 5,
+    twilio: {
+        fromPhone: '+15017122661',
+        accountSid: '',
+        authToken: ''
+    }
 }
 
 // Production environment
@@ -21,7 +26,12 @@ env.production = {
     port: 6000,
     env: 'production',
     secretKey: "H/JvU@'5#}k}MBkbYqDXVLonY2O8]7",
-    maxChecks: 5
+    maxChecks: 5,
+    twilio: {
+        fromPhone: '+15017122661',
+        accountSid: '',
+        authToken: ''
+    }
 }
 
 // Grab which environment user pass to run this app (default: 'development')
