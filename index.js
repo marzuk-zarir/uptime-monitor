@@ -6,21 +6,20 @@
  *
  */
 
-const http = require('http')
-const env = require('./.env/env')
-const { handleReqRes } = require('./helper/handleReqRes')
+const server = require('./lib/server')
+const worker = require('./lib/worker')
 
 // Main object
 const app = {}
 
-// Create a server
-app.createServer = () => {
-    const server = http.createServer(handleReqRes)
-    server.listen(env.port, () => {
-        console.log(`Application is running on ${env.env} environment`)
-        console.log(`Server is running on http://localhost:${env.port}`)
-    })
+// Initialize the main function
+app.init = () => {
+    // Start the server
+    server.init()
+
+    // Start the worker
+    worker.init()
 }
 
-// Start Server
-app.createServer()
+// Start the program
+app.init()
