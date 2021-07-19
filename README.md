@@ -1,6 +1,6 @@
 # Uptime Monitoring API
 
-This application mainly monitor url (check). User can set their own check with http success status code. Application sent request to user's check in every 3 seconds. If user's provided success status code is not match with response status code, url state is down. If match url state is up. Every state change for each check will notify to the user with via SMS.
+This application monitor url (check). User can set their own check with http success status code. Application sent request to user's check in every 3 seconds. If user's provided success status code is not match with response status code, url state is down. If match url state is up. Every state change for each check will notify to the user with via SMS.
 
 - [Uptime Monitoring API](#uptime-monitoring-api)
   - [User Terms & Conditions:](#user-terms--conditions)

@@ -1,14 +1,14 @@
 {
     "name": "uptime-monitoring-api",
     "version": "1.0.0",
-    "description": "",
-    "main": "app.js",
+    "description": "This application monitor url",
+    "main": "index.js",
     "scripts": {
         "start": "nodemon index.js NODE_ENV=development",
         "prod": "node index.js NODE_ENV=production"
     },
     "keywords": [],
-    "author": "",
+    "author": "Marzuk Zarir",
     "license": "ISC",
     "devDependencies": {
         "nodemon": "^2.0.9"
