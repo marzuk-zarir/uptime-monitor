@@ -1,4 +1,0 @@
-This directory is created for new check.
-Without this 'sample' file git ignore auto this directory.
-So, application crash.
-that's why this file created for

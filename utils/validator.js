@@ -174,4 +174,14 @@ validator.validateSms = (phone, msg) => {
     return false
 }
 
+// Validate state. if not default state is 'down'
+validator.validateState = (state, defaultState = 'down') => {
+    return typeof state === 'string' && ['up', 'down'].indexOf(state) > -1 ? state : defaultState
+}
+
+// Validate lastCheck time
+validator.validateLastCheck = (lastCheckTime) => {
+    return typeof lastCheckTime === 'number' && lastCheckTime > 0 ? lastCheckTime : false
+}
+
 module.exports = validator
