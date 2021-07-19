@@ -1,16 +1,5 @@
 {
     "prettier.semi": false,
     "prettier.trailingComma": "none",
-    "files.exclude": {
-        "**/.git": true,
-        "**/.svn": true,
-        "**/.hg": true,
-        "**/CVS": true,
-        "**/.DS_Store": true,
-        // "**/.db": true,
-        "**/.env": true,
-        "**/.vscode": true,
-        "**/package-lock.json": true
-    },
     "cSpell.words": ["twilio"]
 }

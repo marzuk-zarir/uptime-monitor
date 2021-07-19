@@ -12,5 +12,8 @@
     "license": "ISC",
     "devDependencies": {
         "nodemon": "^2.0.9"
+    },
+    "dependencies": {
+        "chalk": "^4.1.1"
     }
 }
